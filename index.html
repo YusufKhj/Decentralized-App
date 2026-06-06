@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>ERC20 Balance Checker</title>
+  <title>ERC20 Balance & Transfer</title>
 </head>
 <body>
   <h2>ERC20 Balance (Sepolia)</h2>
@@ -10,14 +10,26 @@
   <button onclick="checkBalance()">Check My Balance</button>
   <p id="result"></p>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <hr>
+
+  <h2>Send 10 Tokens</h2>
+
+  <button onclick="sendTokens()">Transfer 10 Tokens</button>
+  <p id="txresult"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
   <script>
     const tokenAddress = "0x49228914a04a71136897e24E2264E2D4bD36EA32";
 
+    const recipient = "0x15433DA387451F9dE4565280C85506CB71aF9376";
+
     const abi = [
-      "function balanceOf(address owner) view returns (uint256)"
+      "function balanceOf(address owner) view returns (uint256)",
+      "function transfer(address to, uint amount) returns (bool)"
     ];
 
+    // ---------------- BALANCE ----------------
     async function checkBalance() {
       try {
         if (!window.ethereum) {
@@ -26,7 +38,6 @@
         }
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-
         await provider.send("eth_requestAccounts", []);
 
         const signer = provider.getSigner();
@@ -41,6 +52,38 @@
 
       } catch (err) {
         document.getElementById("result").innerText = err.message;
+      }
+    }
+
+    // ---------------- TRANSFER ----------------
+    async function sendTokens() {
+      try {
+        if (!window.ethereum) {
+          document.getElementById("txresult").innerText = "MetaMask not installed";
+          return;
+        }
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+
+        const signer = provider.getSigner();
+
+        const contract = new ethers.Contract(tokenAddress, abi, signer);
+
+        const amount = ethers.utils.parseUnits("10", 18);
+
+        const tx = await contract.transfer(recipient, amount);
+
+        document.getElementById("txresult").innerText =
+          "Transaction sent: " + tx.hash;
+
+        await tx.wait();
+
+        document.getElementById("txresult").innerText =
+          "Transfer confirmed! Tx: " + tx.hash;
+
+      } catch (err) {
+        document.getElementById("txresult").innerText = err.message;
       }
     }
   </script>
