@@ -57,6 +57,7 @@
 
     // ---------------- TRANSFER ----------------
     async function sendTokens() {
+      console.log("TRANSFER FUNCTION RUNNING");
       try {
         if (!window.ethereum) {
           document.getElementById("txresult").innerText = "MetaMask not installed";
